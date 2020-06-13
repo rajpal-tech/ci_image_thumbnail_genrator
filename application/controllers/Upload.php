@@ -26,6 +26,7 @@ class Upload extends CI_Controller{
 		            $img = $this->upload->data();
 	              //Compress Image
                 $this->_create_thumbs($img['file_name']);
+                $this->_create_thumbs_watemark($img['file_name']);
 
                 $title = $this->input->post('title',TRUE);
                 $image_large = $img['file_name'];
@@ -85,6 +86,95 @@ class Upload extends CI_Controller{
             $this->image_lib->clear();
         }
     }
+  
+    //     $config['source_image'] = './assets/images/large/'.$file_name;
+    //     $config['wm_text'] = 'Copyright 2006 - John Doe RAJPAL';
+    //     $config['wm_type'] = 'text';
+    //     $config['wm_font_path'] = './system/fonts/texb.ttf';
+    //     $config['wm_font_size'] = '16';
+    //     $config['wm_font_color'] = 'ffffff';
+    //     $config['wm_vrt_alignment'] = 'bottom';
+    //     $config['wm_hor_alignment'] = 'center';
+    //     $config['wm_padding'] = '20';
+    //     $this->image_lib->initialize($config);
+    //     $this->image_lib->watermark();        
+    
+        function _create_thumbs_watemark($file_name){    
+            // Image watermark config
+            $config = array(
+                // Large Image
+                array(                    
+                    'source_image'  => './assets/images/large/'.$file_name,
+                    'wm_text'       => 'TECHUGO',
+                    'wm_type'       => 'text',
+                    'wm_font_size'  => 30,
+                 'wm_vrt_alignment' => 'middle',
+                 'wm_hor_alignment' => 'center',
+                    'wm_padding'    => '10',
+                    'wm_font_color' => 'ffffff',
+                    ),
+                // Medium Image
+                array(                    
+                    'source_image'  => './assets/images/medium/'.$file_name,
+                    'wm_text'       => 'TECHUGO',
+                    'wm_type'       => 'text',
+                    'wm_font_size'  => 10,
+                 'wm_vrt_alignment' => 'middle',
+                 'wm_hor_alignment' => 'center',
+                    'wm_padding'    => '10',
+                    'wm_font_color' => 'ffffff',
+                    ),
+                // Small Image
+                array(                    
+                    'source_image'  => './assets/images/small/'.$file_name,
+                    'wm_text'       => 'TECHUGO',
+                    'wm_type'       => 'text',
+                    'wm_font_size'  =>  3,
+                 'wm_vrt_alignment' => 'left',
+                 'wm_hor_alignment' => 'center',
+                    'wm_padding'    => '20',
+                    'wm_font_color' => 'ffffff',
+                    ),
+                );
+
+            $this->load->library('image_lib', $config[0]);
+
+            foreach ($config as $item){
+                $this->image_lib->initialize($item);                
+                if(!$this->image_lib->watermark()){
+                    return false;
+                }
+                $this->image_lib->clear();
+            }
+        }
+
+        public function add_video() {                   // move_upload_file code
+
+            if(!empty($_FILES['video']['name'])){
+        
+                $tmp_name_array = $_FILES['video']['tmp_name'];
+                $n_array = $_FILES['video']['name'];
+                $exp = explode('.', $n_array);
+                $newnme = date('his').rand().'.'.end($exp);
+                $raw_name = explode('.', $newnme);
+        
+                $full_path = base_url('uploads').'/'.$newnme;
+                $new_path = base_url('uploads').'/';
+                if(move_uploaded_file($tmp_name_array, "uploads/".$newnme))
+                {                
+                    $full_path = base_url('uploads').'/'.$newnme;
+                    $new_path = base_url('uploads').'/';
+        
+                    print_r(exec("ffmpeg -i ".$full_path." ".$new_path.$raw_name[0].".jpg"));
+        
+                    echo "uploaded Successfully";
+                }
+            }else{
+        
+                echo "not selected any file";
+            }
+        }
+        
 
     //function to show images to view
     function show_images(){
